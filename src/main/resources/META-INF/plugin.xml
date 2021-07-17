@@ -4,22 +4,19 @@
     <vendor email="me@koding.dev" url="https://koding.dev">Koding Dev</vendor>
 
     <description><![CDATA[
-    So awesome. gosh so epic. me chungus. me big chungus.
+    Adds GitHub Copilot integration into the IntelliJ platform.
+    This <b>IS NOT</b> an official product of GitHub and is meant for specialized use only.
     ]]></description>
 
     <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
          on how to target different products -->
-    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
 
     <idea-version since-build="201.4515.24"/>
 
     <extensions defaultExtensionNs="com.intellij">
-        <completion.contributor language="any" implementationClass="dev.koding.copilot.CopilotCompletionContributor" order="first"/>
-        <!-- Add your extensions here -->
+        <completion.contributor language="any"
+                                implementationClass="dev.koding.copilot.completion.CopilotCompletionContributor"
+                                order="first"/>
     </extensions>
-
-    <actions>
-
-        <!-- Add your actions here -->
-    </actions>
 </idea-plugin>
