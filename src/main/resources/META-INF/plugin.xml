@@ -1,0 +1,25 @@
+<idea-plugin>
+    <id>dev.koding.GitHubCopilot</id>
+    <name>GitHub Copilot</name>
+    <vendor email="me@koding.dev" url="https://koding.dev">Koding Dev</vendor>
+
+    <description><![CDATA[
+    So awesome. gosh so epic. me chungus. me big chungus.
+    ]]></description>
+
+    <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <idea-version since-build="201.4515.24"/>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <completion.contributor language="any" implementationClass="dev.koding.copilot.CopilotCompletionContributor" order="first"/>
+        <!-- Add your extensions here -->
+    </extensions>
+
+    <actions>
+
+        <!-- Add your actions here -->
+    </actions>
+</idea-plugin>
