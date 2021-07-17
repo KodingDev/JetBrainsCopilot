@@ -40,15 +40,21 @@ class CopilotCompletionContributor : CompletionContributor() {
 
         set.restartCompletionOnAnyPrefixChange()
         set.addAllElements(choices.map { choice ->
-            val completion = choice.text.removePrefix(prefix).removeSuffix(suffix)
-                .let {
-                    val split = prefix.split(".")
-                    if (split.size >= 2) "${split.last()}$it" else it
-                }
+            val completion = choice.text.removePrefix(prefix.trim()).removeSuffix(suffix.trim())
+            val insert = "$prefix$completion\n"
 
             PrioritizedLookupElement.withPriority(
-                LookupElementBuilder.create(choice, completion)
-                    .withPresentableText(prefix)
+                LookupElementBuilder.create(choice, "")
+                    .withInsertHandler { context, _ ->
+                        val caret = context.editor.caretModel
+                        val startOffset = caret.visualLineStart
+                        val endOffset = caret.visualLineEnd
+
+                        context.document.deleteString(startOffset, endOffset)
+                        context.document.insertString(startOffset, insert)
+                        caret.moveToOffset(startOffset + insert.length - 1)
+                    }
+                    .withPresentableText(prefix.split(".").last().trim())
                     .withTailText(completion, true)
                     .withTypeText("GitHub Copilot")
                     .withIcon(copilotIcon)
@@ -73,7 +79,7 @@ class CopilotCompletionContributor : CompletionContributor() {
             val lineEnd = document.getLineEndOffset(lineNumber)
 
             val start = document.getText(TextRange.create(lineStart, offset))
-            val end = document.getText(TextRange.create(offset, lineEnd)).trim()
+            val end = document.getText(TextRange.create(offset, lineEnd))
             return start to end
         }
 
