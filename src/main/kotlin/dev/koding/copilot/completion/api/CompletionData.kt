@@ -31,6 +31,7 @@ data class CompletionRequest(
             header("Content-Type", "application/json")
             header("Accept", "application/json")
             header("Openai-Organization", "github-copilot")
+            header("OpenAI-Intent", "copilot-ghost")
 
             body = this@CompletionRequest
         }

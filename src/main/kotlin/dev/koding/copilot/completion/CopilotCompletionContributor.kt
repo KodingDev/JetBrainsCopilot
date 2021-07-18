@@ -2,16 +2,23 @@ package dev.koding.copilot.completion
 
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
-import com.intellij.openapi.application.ex.ApplicationUtil
+import com.intellij.notification.Notification
+import com.intellij.notification.NotificationType
+import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.util.TextRange
 import dev.koding.copilot.completion.api.CompletionRequest
+import dev.koding.copilot.completion.api.CompletionResponse
 import dev.koding.copilot.copilotIcon
-import kotlinx.coroutines.runBlocking
+import io.ktor.client.features.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlin.math.max
 
 
 class CopilotCompletionContributor : CompletionContributor() {
+
+    private var notified = false
 
     override fun fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet) {
         if (parameters.isAutoPopup) return
@@ -23,11 +30,39 @@ class CopilotCompletionContributor : CompletionContributor() {
         """.trimIndent()
 
         val (prefix, suffix) = parameters.prefixSuffix
-        val response = ApplicationUtil.runWithCheckCanceled({
-            return@runWithCheckCanceled runBlocking { CompletionRequest(prompt).send(System.getenv("GITHUB_COPILOT_TOKEN")) }
-        }, ProgressManager.getInstance().progressIndicator) ?: return
 
-        val choices = response.choices.filter { it.text.isNotBlank() }
+        var response: CompletionResponse? = null
+        val job = GlobalScope.launch {
+            try {
+                response = CompletionRequest(prompt).send(System.getenv("GITHUB_COPILOT_TOKEN"))
+            } catch (e: ClientRequestException) {
+                if (!notified) {
+                    @Suppress("DialogTitleCapitalization")
+                    Notification(
+                        "Error Report",
+                        "GitHub Copilot",
+                        "Failed to fetch response. Is your <code>GITHUB_COPILOT_TOKEN</code> environment variable up to date?",
+                        NotificationType.ERROR
+                    ).notify(parameters.editor.project)
+                    notified = true
+                }
+
+                return@launch result.stopHere()
+            }
+        }
+
+        if (result.isStopped) return
+        while (response == null) {
+            try {
+                ProgressManager.getInstance().progressIndicator.checkCanceled()
+                Thread.sleep(10)
+            } catch (e: ProcessCanceledException) {
+                job.cancel()
+                return result.stopHere()
+            }
+        }
+
+        val choices = response!!.choices.filter { it.text.isNotBlank() }
         if (choices.isEmpty()) return
 
         val originalMatcher = result.prefixMatcher
@@ -66,7 +101,7 @@ class CopilotCompletionContributor : CompletionContributor() {
     private fun getPrompt(parameters: CompletionParameters): String {
         // Using the parameters, get the last 10 lines of the current editor document and return their text
         val lineNumber = parameters.editor.document.getLineNumber(parameters.offset)
-        val startOffset = parameters.editor.document.getLineStartOffset(max(0, lineNumber - 10))
+        val startOffset = parameters.editor.document.getLineStartOffset(max(0, lineNumber - 15))
         return parameters.editor.document.getText(TextRange(startOffset, parameters.offset))
     }
 
