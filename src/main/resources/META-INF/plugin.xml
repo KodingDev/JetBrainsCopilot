@@ -8,13 +8,16 @@
     This <b>IS NOT</b> an official product of GitHub and is meant for specialized use only.
     ]]></description>
 
-    <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
-         on how to target different products -->
     <depends>com.intellij.modules.lang</depends>
-
     <idea-version since-build="201.4515.24"/>
 
     <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="dev.koding.copilot.config.ApplicationSettings"/>
+        <applicationConfigurable displayName="GitHub Copilot"
+                                 id="Settings.Copilot"
+                                 groupId="tools"
+                                 instance="dev.koding.copilot.config.ApplicationConfigurable"/>
+        
         <completion.contributor language="any"
                                 implementationClass="dev.koding.copilot.completion.CopilotCompletionContributor"
                                 order="first"/>

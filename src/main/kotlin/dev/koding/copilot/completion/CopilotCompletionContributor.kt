@@ -9,8 +9,8 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.util.TextRange
 import dev.koding.copilot.completion.api.CompletionRequest
 import dev.koding.copilot.completion.api.CompletionResponse
+import dev.koding.copilot.config.settings
 import dev.koding.copilot.copilotIcon
-import dev.koding.copilot.copilotToken
 import io.ktor.client.features.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -24,7 +24,7 @@ class CopilotCompletionContributor : CompletionContributor() {
     override fun fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet) {
         if (parameters.isAutoPopup) return
 
-        if (copilotToken == null) {
+        if (settings.token == null) {
             if (notified) return
             @Suppress("DialogTitleCapitalization")
             Notification(
@@ -39,7 +39,7 @@ class CopilotCompletionContributor : CompletionContributor() {
         val prompt = """
         // Language: ${parameters.originalFile.language.displayName}
         // Path: ${parameters.originalFile.name}
-        ${getPrompt(parameters)}
+        ${parameters.prompt}
         """.trimIndent()
 
         val (prefix, suffix) = parameters.prefixSuffix
@@ -47,14 +47,14 @@ class CopilotCompletionContributor : CompletionContributor() {
         var response: CompletionResponse? = null
         val job = GlobalScope.launch {
             try {
-                response = CompletionRequest(prompt).send(copilotToken)
+                response = CompletionRequest(prompt).send(settings.token!!)
             } catch (e: ClientRequestException) {
                 if (!notified) {
                     @Suppress("DialogTitleCapitalization")
                     Notification(
                         "Error Report",
                         "GitHub Copilot",
-                        "Failed to fetch response. Is your <code>GITHUB_COPILOT_TOKEN</code> environment variable up to date?",
+                        "Failed to fetch response. Is your copilot token valid?",
                         NotificationType.ERROR
                     ).notify(parameters.editor.project)
                     notified = true
@@ -111,11 +111,13 @@ class CopilotCompletionContributor : CompletionContributor() {
         })
     }
 
-    private fun getPrompt(parameters: CompletionParameters): String {
-        val lineNumber = parameters.editor.document.getLineNumber(parameters.offset)
-        val startOffset = parameters.editor.document.getLineStartOffset(max(0, lineNumber - 15))
-        return parameters.editor.document.getText(TextRange(startOffset, parameters.offset))
-    }
+    private val CompletionParameters.prompt: String
+        get() {
+            val document = editor.document
+            val lineNumber = document.getLineNumber(offset)
+            val startOffset = document.getLineStartOffset(max(0, lineNumber - settings.contentLines))
+            return document.getText(TextRange(startOffset, offset))
+        }
 
     private val CompletionParameters.prefixSuffix: Pair<String, String>
         get() {
