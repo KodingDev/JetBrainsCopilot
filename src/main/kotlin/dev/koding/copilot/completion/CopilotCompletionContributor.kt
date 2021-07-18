@@ -10,6 +10,7 @@ import com.intellij.openapi.util.TextRange
 import dev.koding.copilot.completion.api.CompletionRequest
 import dev.koding.copilot.completion.api.CompletionResponse
 import dev.koding.copilot.copilotIcon
+import dev.koding.copilot.copilotToken
 import io.ktor.client.features.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -23,6 +24,18 @@ class CopilotCompletionContributor : CompletionContributor() {
     override fun fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet) {
         if (parameters.isAutoPopup) return
 
+        if (copilotToken == null) {
+            if (notified) return
+            @Suppress("DialogTitleCapitalization")
+            Notification(
+                "Error Report",
+                "GitHub Copilot",
+                "You have not set a token for GitHub Copilot.",
+                NotificationType.ERROR
+            ).notify(parameters.editor.project)
+            return run { notified = true }
+        }
+
         val prompt = """
         // Language: ${parameters.originalFile.language.displayName}
         // Path: ${parameters.originalFile.name}
@@ -34,7 +47,7 @@ class CopilotCompletionContributor : CompletionContributor() {
         var response: CompletionResponse? = null
         val job = GlobalScope.launch {
             try {
-                response = CompletionRequest(prompt).send(System.getenv("GITHUB_COPILOT_TOKEN"))
+                response = CompletionRequest(prompt).send(copilotToken)
             } catch (e: ClientRequestException) {
                 if (!notified) {
                     @Suppress("DialogTitleCapitalization")
@@ -76,7 +89,7 @@ class CopilotCompletionContributor : CompletionContributor() {
         set.restartCompletionOnAnyPrefixChange()
         set.addAllElements(choices.map { choice ->
             val completion = choice.text.removePrefix(prefix.trim()).removeSuffix(suffix.trim())
-            val insert = "$prefix$completion\n"
+            val insert = "$prefix${completion.trim()}\n"
 
             PrioritizedLookupElement.withPriority(
                 LookupElementBuilder.create(choice, "")
@@ -89,7 +102,7 @@ class CopilotCompletionContributor : CompletionContributor() {
                         context.document.insertString(startOffset, insert)
                         caret.moveToOffset(startOffset + insert.length - 1)
                     }
-                    .withPresentableText(prefix.split(".").last().trim())
+                    .withPresentableText(prefix.split(".").last())
                     .withTailText(completion, true)
                     .withTypeText("GitHub Copilot")
                     .withIcon(copilotIcon)
@@ -99,7 +112,6 @@ class CopilotCompletionContributor : CompletionContributor() {
     }
 
     private fun getPrompt(parameters: CompletionParameters): String {
-        // Using the parameters, get the last 10 lines of the current editor document and return their text
         val lineNumber = parameters.editor.document.getLineNumber(parameters.offset)
         val startOffset = parameters.editor.document.getLineStartOffset(max(0, lineNumber - 15))
         return parameters.editor.document.getText(TextRange(startOffset, parameters.offset))

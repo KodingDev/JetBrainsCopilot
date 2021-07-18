@@ -25,8 +25,8 @@ data class CompletionRequest(
     val logProbability: Int = 2,
     val stop: List<String> = listOf("\n")
 ) {
-    suspend fun send(token: String): CompletionResponse? =
-        httpClient.post<CompletionResponse>("https://copilot.githubassets.com/v1/engines/github-multi-stochbpe-cushman-pii/completions") {
+    suspend fun send(token: String): CompletionResponse =
+        httpClient.post("https://copilot.githubassets.com/v1/engines/github-multi-stochbpe-cushman-pii/completions") {
             header("Authorization", "Bearer $token")
             header("Content-Type", "application/json")
             header("Accept", "application/json")
