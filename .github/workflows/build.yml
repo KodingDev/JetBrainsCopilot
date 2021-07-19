@@ -38,5 +38,5 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: Package
-          path: build/distributions
+          name: GitHubCopilot.zip
+          path: build/distributions/*.zip
