@@ -26,7 +26,7 @@ class CopilotCompletionContributor : CompletionContributor() {
     override fun fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet) {
         if (parameters.isAutoPopup) return
 
-        if (settings.token?.isBlank() == true) return Notifications.send(
+        if (settings.token == null || settings.token?.isBlank() == true) return Notifications.send(
             "You have not set a token for GitHub Copilot.",
             type = NotificationType.ERROR,
             once = true,
@@ -52,12 +52,15 @@ class CopilotCompletionContributor : CompletionContributor() {
             try {
                 response = CompletionRequest(prompt).send(settings.token!!)
             } catch (e: ClientRequestException) {
+                e.printStackTrace()
                 errored = true
                 return@launch Notifications.send(
                     "Failed to fetch response. Is your copilot token valid?",
                     type = NotificationType.ERROR,
                     once = true,
                     Notifications.NotificationAction("Login") { handleLogin() })
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
 

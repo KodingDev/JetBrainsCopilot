@@ -15,7 +15,7 @@ data class CompletionChoice(
 data class CompletionRequest(
     val prompt: String,
     @SerializedName("max_tokens")
-    val maxTokens: Int = 50,
+    val maxTokens: Int = 70,
     val temperature: Double = 0.2,
     @SerializedName("top_p")
     val topP: Double = 1.0,
