@@ -3,6 +3,7 @@
 package dev.koding.copilot.auth
 
 import com.google.gson.annotations.SerializedName
+import com.intellij.ide.BrowserUtil
 import dev.koding.copilot.config.settings
 import dev.koding.copilot.httpClient
 import dev.koding.copilot.util.Notifications
@@ -10,8 +11,6 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.awt.Desktop
-import java.net.URI
 import javax.swing.JOptionPane
 
 const val authenticateUrl = "https://vscode-auth.github.com/authorize/" +
@@ -48,7 +47,7 @@ private suspend fun getAuthToken(url: String): CopilotTokenResponse {
 }
 
 fun handleLogin(handler: (String) -> Unit = { Notifications.send("Login successful") }) {
-    Desktop.getDesktop().browse(URI.create(authenticateUrl))
+    BrowserUtil.browse(authenticateUrl)
     val url = JOptionPane.showInputDialog("Enter the callback URL")
 
     // TODO: Change from global scope
