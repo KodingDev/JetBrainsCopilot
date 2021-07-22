@@ -20,7 +20,7 @@
 
         <completion.contributor language="any"
                                 implementationClass="dev.koding.copilot.completion.CopilotCompletionContributor"
-                                order="first"/>
+                                order="last"/>
 
         <notificationGroup id="GitHub Copilot" displayType="STICKY_BALLOON"/>
     </extensions>

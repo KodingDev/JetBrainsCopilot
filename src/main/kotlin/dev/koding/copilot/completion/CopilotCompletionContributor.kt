@@ -44,7 +44,6 @@ class CopilotCompletionContributor : CompletionContributor() {
             .withPrefixMatcher(CopilotPrefixMatcher(matcher.cloneWithPrefix(matcher.prefix)))
             .withRelevanceSorter(CompletionSorter.defaultSorter(parameters, matcher).weigh(CopilotWeigher()))
 
-        // TODO: Fix freeze
         var response: CompletionResponse? = null
         var errored = false
 
