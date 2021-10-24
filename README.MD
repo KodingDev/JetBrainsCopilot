@@ -1,22 +1,17 @@
-
 # JetBrains Copilot
 
 GitHub Copilot support for the IntelliJ Platform.
 
-> **IMPORTANT NOTICE**
-> 
-> Yes, this is my first IntelliJ plugin. All things considered, I didn't expect it
-> to become as popular as it is currently, but here we are. It started off as a
-> quick hack to have some simple autocompletion, meant for private use really.
-> 
-> Given my lack of familiarity with the IntelliJ Platform SDK, I'm unable to
-> provide a lot of support for the plugin itself, namely in terms of diagnosing
-> issues. I'd expect that Copilot will get an official plugin when it is fully
-> released, hopefully without the shortcomings of this current hack.
-> 
-> To end off this short monologue, **thank you** for all the support on this project.
-> I will do update where possible, but given my lack of familiarity some features/fixes
-> may not be feasible for me to implement.
+# Deprecation Notice
+
+> GitHub has recently released an official IntelliJ plugin for copilot.
+> Please **uninstall** JetBrains Copilot and follow the guide [here](https://github.com/github/copilot-docs/blob/main/docs/gettingstartedjetbrains.md)
+> to install the official version of the plugin.
+> **Thank you** for the support on this small project of mine!
+
+*For archival purposes, this repository has been marked as read-only.
+As noted in the FAQ, this plugin will only be maintained and updated until
+GitHub releases their own version of the plugin, which is now public.*
 
 ## Installation
 
